@@ -1,0 +1,112 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom right, #dbeafe, #e0f7fa);
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #ffffffdd;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+  
+  h1 {
+    text-align: center;
+    color: #1e3a8a;
+    margin-bottom: 24px;
+  }
+  
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  input[type="text"], select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #93c5fd;
+    border-radius: 8px;
+    background: #f0f9ff;
+    flex: 1 1 250px;
+    min-width: 180px;
+  }
+  
+  button {
+    padding: 10px 18px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #2563eb;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex: 1 1 150px;
+    min-width: 120px;
+  }
+  
+  button:hover {
+    background-color: #1d4ed8;
+  }
+  
+  #output, #treeView {
+    margin-top: 20px;
+    padding: 15px;
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin: 0;
+  }
+  
+  li::before {
+    content: "└── ";
+    color: #6b7280;
+  }
+  
+  .word-end {
+    color: #16a34a;
+    font-weight: bold;
+    margin-left: 5px;
+  }
+  
+  strong {
+    color: #0f172a;
+  }
+  
+  @media (max-width: 600px) {
+    .container {
+      margin: 20px;
+      padding: 16px;
+    }
+  
+    h1 {
+      font-size: 1.4rem;
+    }
+  
+    input, select, button {
+      width: 100% !important;
+      flex: none !important;
+    }
+  
+    .controls {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+  
