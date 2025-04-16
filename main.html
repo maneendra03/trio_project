@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trie Tree Visualizer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #dbeafe, #e0f7fa);
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #ffffffdd;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 24px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"], select {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #93c5fd;
+      border-radius: 8px;
+      background: #f0f9ff;
+      flex: 1 1 250px;
+      min-width: 180px;
+    }
+
+    button {
+      padding: 10px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #2563eb;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      flex: 1 1 150px;
+      min-width: 120px;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    #output, #treeView {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    li::before {
+      content: "└── ";
+      color: #6b7280;
+    }
+
+    .word-end {
+      color: #16a34a;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    strong {
+      color: #0f172a;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      input, select, button {
+        width: 100% !important;
+        flex: none !important;
+      }
+
+      .controls {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌳 Trie Tree Visualizer</h1>
+    <div class="controls">
+      <input type="text" id="wordInput" placeholder="Enter word or prefix" />
+      <select id="operationType">
+        <option value="insert">Insert</option>
+        <option value="search">Search Word</option>
+        <option value="prefix">Prefix Search</option>
+        <option value="getall">Get All Words</option>
+      </select>
+      <button onclick="performOperation()">Go</button>
+    </div>
+
+    <div id="output"></div>
+    <div id="treeView"><strong>root</strong></div>
+  </div>
+
+  <script>
+    class TrieNode {
+      constructor(letter = "") {
+        this.letter = letter;
+        this.children = {};
+        this.end = false;
+      }
+    }
+
+    class Trie {
+      constructor() {
+        this.root = new TrieNode("root");
+      }
+
+      insert(word) {
+        let node = this.root;
+        for (let ch of word) {
+          if (!node.children[ch]) {
+            node.children[ch] = new TrieNode(ch);
+          }
+          node = node.children[ch];
+        }
+        node.end = true;
+      }
+
+      search(word) {
+        let node = this.root;
+        for (let ch of word) {
+          if (!node.children[ch]) return false;
+          node = node.children[ch];
+        }
+        return node.end;
+      }
+
+      startsWith(prefix) {
+        let node = this.root;
+        for (let ch of prefix) {
+          if (!node.children[ch]) return null;
+          node = node.children[ch];
+        }
+        return node;
+      }
+
+      getWordsFromNode(node, prefix, result = []) {
+        if (node.end) result.push(prefix);
+        for (let ch in node.children) {
+          this.getWordsFromNode(node.children[ch], prefix + ch, result);
+        }
+        return result;
+      }
+
+      getWordsWithPrefix(prefix) {
+        let node = this.startsWith(prefix);
+        if (!node) return [];
+        return this.getWordsFromNode(node, prefix);
+      }
+
+      getAllWords() {
+        return this.getWordsFromNode(this.root, "");
+      }
+
+      getDOMTree(node = this.root) {
+        const ul = document.createElement('ul');
+        for (let key in node.children) {
+          const child = node.children[key];
+          const li = document.createElement('li');
+          li.innerHTML = `${child.letter}${child.end ? '<span class="word-end">✔️</span>' : ''}`;
+          const childUl = this.getDOMTree(child);
+          if (Object.keys(child.children).length > 0) {
+            li.appendChild(childUl);
+          }
+          ul.appendChild(li);
+        }
+        return ul;
+      }
+
+      render() {
+        const container = document.getElementById('treeView');
+        container.innerHTML = "<strong>root</strong>";
+        const tree = this.getDOMTree();
+        container.appendChild(tree);
+      }
+    }
+
+    const trie = new Trie();
+
+    function performOperation() {
+      const input = document.getElementById("wordInput");
+      const operation = document.getElementById("operationType").value;
+      const value = input.value.trim().toLowerCase();
+      const output = document.getElementById("output");
+
+      if ((operation !== "getall") && (!value || !/^[a-z]+$/.test(value))) {
+        alert("Please enter a valid lowercase word (a-z only).");
+        return;
+      }
+
+      if (operation === "insert") {
+        trie.insert(value);
+        trie.render();
+        output.innerHTML = `✅ Inserted "<strong>${value}</strong>"`;
+      } else if (operation === "search") {
+        const found = trie.search(value);
+        output.innerHTML = `🔍 Search "<strong>${value}</strong>": ${found ? '<span style="color:green;">Found ✔️</span>' : '<span style="color:red;">Not Found ❌</span>'}`;
+      } else if (operation === "prefix") {
+        const results = trie.getWordsWithPrefix(value);
+        if (results.length) {
+          output.innerHTML = `🧩 Words with prefix "<strong>${value}</strong>": <ul>${results.map(w => `<li>${w}</li>`).join('')}</ul>`;
+        } else {
+          output.innerHTML = `🚫 No words found with prefix "<strong>${value}</strong>"`;
+        }
+      } else if (operation === "getall") {
+        const allWords = trie.getAllWords();
+        if (allWords.length) {
+          output.innerHTML = `📋 All inserted words: <ul>${allWords.map(w => `<li>${w}</li>`).join('')}</ul>`;
+        } else {
+          output.innerHTML = `📭 No words inserted yet.`;
+        }
+      }
+
+      input.value = "";
+    }
+  </script>
+</body>
+</html>
